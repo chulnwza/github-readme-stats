@@ -4,7 +4,7 @@ import { Card } from "../src/common/Card.js";
 import { getCardColors } from "../src/common/color.js";
 
 const PADDING = 25;
-const TITLE_HEIGHT = 35;
+const BODY_OFFSET = 55; // Card translates body by (paddingY + 20) = 55
 
 /**
  * @param {any} req
@@ -56,8 +56,9 @@ export default async (req, res) => {
     innerSvg = `<text x="0" y="24" fill="#e96d71" font-family="sans-serif" font-size="14">Failed to load icons</text>`;
   }
 
+  // CARD_HEIGHT = body_offset + svgHeight + bottom_padding
   const CARD_WIDTH = svgWidth + PADDING * 2;
-  const CARD_HEIGHT = svgHeight + PADDING * 2 + TITLE_HEIGHT;
+  const CARD_HEIGHT = BODY_OFFSET + svgHeight + PADDING;
 
   const colors = getCardColors({
     title_color,
@@ -83,7 +84,7 @@ export default async (req, res) => {
     card.render(`
       <svg
         x="${PADDING}"
-        y="${TITLE_HEIGHT + PADDING}"
+        y="0"
         width="${svgWidth}"
         height="${svgHeight}"
         viewBox="${svgViewBox}"
