@@ -3,11 +3,13 @@
 import { Card } from "../src/common/Card.js";
 import { getCardColors } from "../src/common/color.js";
 
-const ICON_SIZE = 48;
-const ICON_GAP = 12;
 const PADDING = 25;
 const TITLE_HEIGHT = 35;
 
+/**
+ * @param {any} req
+ * @param {any} res
+ */
 export default async (req, res) => {
   const {
     icons = "laravel,fastapi,vue,react,ts,tailwind,bootstrap,docker,redis,postgres,mysql,pytorch",
@@ -29,24 +31,23 @@ export default async (req, res) => {
     .split(",")
     .map((s) => s.trim())
     .filter(Boolean);
-  const cols = Math.min(parseInt(String(perline), 10), iconList.length);
-  const rows = Math.ceil(iconList.length / cols);
-
-  const iconAreaWidth = cols * ICON_SIZE + (cols - 1) * ICON_GAP;
-  const iconAreaHeight = rows * ICON_SIZE + (rows - 1) * ICON_GAP;
-
-  const CARD_WIDTH = iconAreaWidth + PADDING * 2;
-  const CARD_HEIGHT = iconAreaHeight + PADDING * 2 + TITLE_HEIGHT;
 
   let innerSvg = "";
-  let svgViewBox = `0 0 ${iconAreaWidth} ${iconAreaHeight}`;
+  let svgWidth = 300;
+  let svgHeight = 100;
+  let svgViewBox = "0 0 300 100";
 
   try {
     const url = `https://skillicons.dev/icons?i=${iconList.join(",")}&perline=${perline}`;
     const response = await fetch(url);
     const svgText = await response.text();
 
+    const widthMatch = svgText.match(/\bwidth="(\d+(?:\.\d+)?)"/);
+    const heightMatch = svgText.match(/\bheight="(\d+(?:\.\d+)?)"/);
     const viewBoxMatch = svgText.match(/viewBox="([^"]+)"/);
+
+    if (widthMatch) svgWidth = parseFloat(widthMatch[1]);
+    if (heightMatch) svgHeight = parseFloat(heightMatch[1]);
     if (viewBoxMatch) svgViewBox = viewBoxMatch[1];
 
     const innerMatch = svgText.match(/<svg[^>]*>([\s\S]*)<\/svg>/);
@@ -54,6 +55,9 @@ export default async (req, res) => {
   } catch (_e) {
     innerSvg = `<text x="0" y="24" fill="#e96d71" font-family="sans-serif" font-size="14">Failed to load icons</text>`;
   }
+
+  const CARD_WIDTH = svgWidth + PADDING * 2;
+  const CARD_HEIGHT = svgHeight + PADDING * 2 + TITLE_HEIGHT;
 
   const colors = getCardColors({
     title_color,
@@ -80,8 +84,8 @@ export default async (req, res) => {
       <svg
         x="${PADDING}"
         y="${TITLE_HEIGHT + PADDING}"
-        width="${iconAreaWidth}"
-        height="${iconAreaHeight}"
+        width="${svgWidth}"
+        height="${svgHeight}"
         viewBox="${svgViewBox}"
       >
         ${innerSvg}
