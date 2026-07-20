@@ -23,6 +23,7 @@ export default async (req, res) => {
     custom_title = "Tech Stack",
     border_radius,
     disable_animations,
+    height, // optional: override card height (to match sibling card)
   } = req.query;
 
   res.setHeader("Content-Type", "image/svg+xml");
@@ -56,9 +57,13 @@ export default async (req, res) => {
     innerSvg = `<text x="0" y="24" fill="#e96d71" font-family="sans-serif" font-size="14">Failed to load icons</text>`;
   }
 
-  // CARD_HEIGHT = body_offset + svgHeight + bottom_padding
   const CARD_WIDTH = svgWidth + PADDING * 2;
-  const CARD_HEIGHT = BODY_OFFSET + svgHeight + PADDING;
+  const autoHeight = BODY_OFFSET + svgHeight + PADDING;
+  const CARD_HEIGHT = height ? parseInt(String(height), 10) : autoHeight;
+
+  // vertically center icons when height is overridden
+  const innerArea = CARD_HEIGHT - BODY_OFFSET - PADDING;
+  const iconY = Math.max(0, (innerArea - svgHeight) / 2);
 
   const colors = getCardColors({
     title_color,
@@ -84,7 +89,7 @@ export default async (req, res) => {
     card.render(`
       <svg
         x="${PADDING}"
-        y="0"
+        y="${iconY}"
         width="${svgWidth}"
         height="${svgHeight}"
         viewBox="${svgViewBox}"
